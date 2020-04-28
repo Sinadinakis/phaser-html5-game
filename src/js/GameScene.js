@@ -1,16 +1,14 @@
 
 //Import Assets
-import logoImg from "../assets/logo.png";
-import spaceCraft from "../assets/spaceCraft.png";
 import background from "../assets/background.png";
 import platform from "../assets/platform.png";
 import star from '../assets/star.png';
 import user from '../assets/player.png'
 import ground from '../assets/ground.png';
 import enemy from '../assets/enemy.png';
+import heart from '../assets/heart.png';
 
 // Import Entities
-import { Environment } from './Entity';
 const width = 800;
 const height = 600;
 
@@ -23,6 +21,7 @@ let highScore, highScoreText;
 let dragon;
 let dragonMove;
 let lives, livesText;
+let heartIcon;
 const stylesText = { font: '30px Pixeltype', fill: '#fff' }
 
 export class GameScene extends Phaser.Scene {
@@ -34,7 +33,7 @@ export class GameScene extends Phaser.Scene {
         highScore = 0;
         highScoreText;
         dragonMove = 1;
-        lives = 3;
+        lives = 2;
     };
 
 
@@ -49,13 +48,12 @@ export class GameScene extends Phaser.Scene {
             frameHeight: 48,
         });
         this.load.image('dragon', enemy);
+        this.load.image('heart', heart);
     };
 
     create() {
         platforms = this.physics.add.staticGroup();
-        // Enable cursors
         cursors = this.input.keyboard.createCursorKeys();
-
         this.createEnviroment()
         this.createPlayer()
         this.createMonster();
@@ -64,20 +62,20 @@ export class GameScene extends Phaser.Scene {
 
     update() {
         this.updatePlayerMovement();
-        localStorage.highScore = highScore;
-        this.updateEnemyMovements();
-        if (Phaser.Geom.Intersects.RectangleToRectangle(player.getBounds(), dragon.getBounds())) {
-            lives--;
-            livesText.setText("Lives: " + lives);
-            this.end();
+        if (highScore > localStorage.getItem("highScore")) {
+            localStorage.highScore = highScore;
         }
+        this.updateEnemyMovements();
+        this.checkEnemyCollision();
     }
 
 
     end() {
         if (lives <= 0) {
+            localStorage.highScore = 0;
             this.scene.restart();
         } else {
+            player.destroy();
             this.create();
         }
     };
@@ -106,12 +104,11 @@ export class GameScene extends Phaser.Scene {
         });
 
         // High Score
-        highScore = localStorage.highScore;
-        console.log(highScore);
         if (typeof (Storage) !== "undefined") {
             if (localStorage.highScore === undefined)
                 localStorage.setItem('highScore', 0);
 
+            highScore = localStorage.highScore;
             highScoreText = this.add.text(10, 0, 'High Score: ' + localStorage.highScore, stylesText);
             highScoreText.setShadow(1, 1, 'rgba(0,0,0,1)', 1);
         }
@@ -153,6 +150,23 @@ export class GameScene extends Phaser.Scene {
         // add monster
         dragon = this.add.sprite(350, 150, 'dragon');
         dragon.setScale(0.2);
+    }
+
+    checkEnemyCollision() {
+        if (Phaser.Geom.Intersects.RectangleToRectangle(player.getBounds(), dragon.getBounds())) {
+            lives--;
+            livesText.setText("Lives: " + lives);
+            for (var i = 0; i < lives; i++) {
+                heartIcon = this.add.sprite(
+                    32 + (i * 32),
+                    this.game.config.height - 24,
+                    "heart"
+                );
+                heartIcon.setScale(0.05);
+                heartIcon.setDepth(2);
+            }
+            this.end();
+        }
     }
 
     updatePlayerMovement() {
