@@ -18,10 +18,12 @@ let cursors;
 let stars;
 let player;
 let highScore, highScoreText;
+let topScore;
 let dragon;
 let dragonMove;
 let lives, livesText;
 let heartIcon;
+let textGameOver;
 const stylesText = { font: '30px Pixeltype', fill: '#fff' }
 
 export class GameScene extends Phaser.Scene {
@@ -33,7 +35,7 @@ export class GameScene extends Phaser.Scene {
         highScore = 0;
         highScoreText;
         dragonMove = 1;
-        lives = 2;
+        lives = 3;
     };
 
 
@@ -58,6 +60,7 @@ export class GameScene extends Phaser.Scene {
         this.createPlayer()
         this.createMonster();
         this.initCollisionWithObjects()
+        this.showBestScore();
     }
 
     update() {
@@ -65,10 +68,13 @@ export class GameScene extends Phaser.Scene {
         if (highScore > localStorage.getItem("highScore")) {
             localStorage.highScore = highScore;
         }
+        if (topScore < localStorage.highScore) {
+            topScore = highScore;
+        }
+        
         this.updateEnemyMovements();
         this.checkEnemyCollision();
     }
-
 
     end() {
         if (lives <= 0) {
@@ -105,17 +111,20 @@ export class GameScene extends Phaser.Scene {
 
         // High Score
         if (typeof (Storage) !== "undefined") {
-            if (localStorage.highScore === undefined)
+            if (localStorage.highScore === undefined) {
                 localStorage.setItem('highScore', 0);
-
-            highScore = localStorage.highScore;
+            } else {
+                highScore = localStorage.highScore;
+            }
+    
             highScoreText = this.add.text(10, 0, 'High Score: ' + localStorage.highScore, stylesText);
             highScoreText.setShadow(1, 1, 'rgba(0,0,0,1)', 1);
         }
 
         // Lives
-        livesText = this.add.text(width - 150, 0, 'Lives: ' + lives, { ...stylesText, fill: 'red' });
+        livesText = this.add.text(width - 150, height - 40, 'Lives: ' + lives, { ...stylesText, fill: 'red' });
         livesText.setShadow(1, 1, 'rgba(0,0,0,1)', 1);
+        this.createLives();
     };
 
     createPlayer() {
@@ -156,15 +165,8 @@ export class GameScene extends Phaser.Scene {
         if (Phaser.Geom.Intersects.RectangleToRectangle(player.getBounds(), dragon.getBounds())) {
             lives--;
             livesText.setText("Lives: " + lives);
-            for (var i = 0; i < lives; i++) {
-                heartIcon = this.add.sprite(
-                    32 + (i * 32),
-                    this.game.config.height - 24,
-                    "heart"
-                );
-                heartIcon.setScale(0.05);
-                heartIcon.setDepth(2);
-            }
+            heartIcon.destroy();
+            this.createLives();
             this.end();
         }
     }
@@ -217,9 +219,34 @@ export class GameScene extends Phaser.Scene {
         highScoreText.setText('HighScore: ' + highScore);
     }
 
+    showBestScore() {
+        if (topScore === undefined)
+            topScore = 0
+
+        let textHScore = this.add.text(width - 200, 0, "Best Score: " + topScore, stylesText);
+        textHScore.setShadow(1, 1, 'rgba(0,0,0,1)', 1);
+    }
+
+    createLives() {
+        for (var i = 0; i < lives; i++) {
+            heartIcon = this.add.sprite(
+                32 + (i * 32),
+                this.game.config.height - 24,
+                "heart"
+            );
+            heartIcon.setScale(0.05);
+        }
+    }
+
     loseLives() {
         lives--;
-        liveText.setText("Lives: " + lives);
+        liveText.setText("Lives: " + lives);  
         this.end();
+    }
+
+    changeBackground() {
+        this.input.once('pointerdown', function () {
+            this.scene.start('GameScene2');
+        }, this);
     }
 }
