@@ -1,18 +1,21 @@
 
 //Import Assets
-import background from "../assets/background.png";
-import platform from "../assets/platform.png";
-import star from '../assets/star.png';
-import user from '../assets/player.png'
-import ground from '../assets/ground.png';
-import enemy from '../assets/enemy.png';
-import heart from '../assets/heart.png';
+import background from "../../assets/background.png";
+import platform from "../../assets/platform.png";
+import star from '../../assets/star.png';
+import user from '../../assets/player.png'
+import ground from '../../assets/ground.png';
+import enemy from '../../assets/enemy.png';
+import heart from '../../assets/heart.png';
 
-// Import Entities
+import { CharacterSprite, AddText } from '../Utilities';
+
+// Const
 const width = 800;
 const height = 600;
+const stylesText = { font: '30px Pixeltype', fill: '#fff' }
 
-// global variables
+// Global variables
 let platforms;
 let cursors;
 let stars;
@@ -23,8 +26,6 @@ let dragon;
 let dragonMove;
 let lives, livesText;
 let heartIcon;
-let textGameOver;
-const stylesText = { font: '30px Pixeltype', fill: '#fff' }
 
 export class GameScene extends Phaser.Scene {
     constructor() {
@@ -117,23 +118,18 @@ export class GameScene extends Phaser.Scene {
                 highScore = localStorage.highScore;
             }
     
-            highScoreText = this.add.text(10, 0, 'High Score: ' + localStorage.highScore, stylesText);
-            highScoreText.setShadow(1, 1, 'rgba(0,0,0,1)', 1);
+            highScoreText = new AddText(this, 10, 0, 'High Score: ' + localStorage.highScore, stylesText);
         }
 
         // Lives
-        livesText = this.add.text(width - 150, height - 40, 'Lives: ' + lives, { ...stylesText, fill: 'red' });
-        livesText.setShadow(1, 1, 'rgba(0,0,0,1)', 1);
+        livesText = new AddText(this,width - 150, height - 40, 'Lives: ' + lives, { ...stylesText, fill: 'red' }) 
         this.createLives();
     };
 
     createPlayer() {
-        player = this.physics.add.sprite(100, 450, 'player');
-        player.setBounce(0.5);
-        player.setCollideWorldBounds(true);
-        player.body.setGravityY(300);
+        player = new CharacterSprite(this, 100, 450, 'player');
 
-        // Initialize Player Animcation
+        // Initialize Player Animation
         this.anims.create({
             key: "left",
             frames: this.anims.generateFrameNumbers("player", { start: 0, end: 3 }),
@@ -156,7 +152,6 @@ export class GameScene extends Phaser.Scene {
     };
 
     createMonster() {
-        // add monster
         dragon = this.add.sprite(350, 150, 'dragon');
         dragon.setScale(0.2);
     }
@@ -223,8 +218,7 @@ export class GameScene extends Phaser.Scene {
         if (topScore === undefined)
             topScore = 0
 
-        let textHScore = this.add.text(width - 200, 0, "Best Score: " + topScore, stylesText);
-        textHScore.setShadow(1, 1, 'rgba(0,0,0,1)', 1);
+        new AddText(this, width - 200, 0, "Best Score: " + topScore, stylesText);
     }
 
     createLives() {

@@ -1,4 +1,5 @@
-import { GameScene } from './GameScene'; 
+import { GameScene } from './Scenes/GameScene'; 
+
 const width = 800;
 const height = 600;
 
