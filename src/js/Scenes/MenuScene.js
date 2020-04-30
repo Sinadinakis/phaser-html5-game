@@ -4,7 +4,6 @@ import background from "../../assets/background.png";
 
 // Global variables
 let playButton;
-let optionsButton;
 let topScore;
 let sfx;
 
@@ -23,7 +22,8 @@ export class MenuScene extends Phaser.Scene {
         this.load.image("play", play);
         this.load.image("option", options);
         this.load.image("sky" , background);
-
+        
+        // Sounds Button
         this.load.audio("sndButton", "/src/assets/audio/sndBtn.wav");
     }
 
@@ -33,6 +33,7 @@ export class MenuScene extends Phaser.Scene {
 
         playButton.setInteractive();
         playButton.on("pointerup", () => {
+            this.sound.stopAll();
             this.sound.add("sndButton").play();
             this.scene.start('GameScene');
         })
