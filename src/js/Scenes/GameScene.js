@@ -8,7 +8,7 @@ import ground from '../../assets/ground.png';
 import enemy from '../../assets/enemy.png';
 import heart from '../../assets/heart.png';
 
-import { CharacterSprite, AddText } from '../Utilities';
+import { CharacterSprite, AddText, TextButton } from '../Utilities';
 
 // Const
 const width = 800;
@@ -24,8 +24,9 @@ let highScore, highScoreText;
 let topScore;
 let dragon;
 let dragonMove;
-let lives, livesText;
+let lives;
 let heartIcon;
+let backMenuButton;
 
 export class GameScene extends Phaser.Scene {
     constructor() {
@@ -52,9 +53,13 @@ export class GameScene extends Phaser.Scene {
         });
         this.load.image('dragon', enemy);
         this.load.image('heart', heart);
+
+        // Music game
+        this.load.audio("music", "/src/assets/audio/shuinvy-childhood.mp3");
     };
 
     create() {
+        this.sound.add("music").play();
         platforms = this.physics.add.staticGroup();
         cursors = this.input.keyboard.createCursorKeys();
         this.createEnviroment()
@@ -80,9 +85,11 @@ export class GameScene extends Phaser.Scene {
     end() {
         if (lives <= 0) {
             localStorage.highScore = 0;
+            this.sound.stopAll();
             this.scene.restart();
         } else {
             player.destroy();
+            this.sound.stopAll();
             this.create();
         }
     };
@@ -110,6 +117,11 @@ export class GameScene extends Phaser.Scene {
             child.setBounceY(Phaser.Math.FloatBetween(0.4, 0.8));
         });
 
+        // Return menu
+        new TextButton(this, width - 150, height - 40, 'Back Menu', { ...stylesText, fill: 'black' }, () => {
+            this.scene.start('MenuScene')
+        }); 
+
         // High Score
         if (typeof (Storage) !== "undefined") {
             if (localStorage.highScore === undefined) {
@@ -121,8 +133,6 @@ export class GameScene extends Phaser.Scene {
             highScoreText = new AddText(this, 10, 0, 'High Score: ' + localStorage.highScore, stylesText);
         }
 
-        // Lives
-        livesText = new AddText(this,width - 150, height - 40, 'Lives: ' + lives, { ...stylesText, fill: 'red' }) 
         this.createLives();
     };
 
@@ -159,7 +169,6 @@ export class GameScene extends Phaser.Scene {
     checkEnemyCollision() {
         if (Phaser.Geom.Intersects.RectangleToRectangle(player.getBounds(), dragon.getBounds())) {
             lives--;
-            livesText.setText("Lives: " + lives);
             heartIcon.destroy();
             this.createLives();
             this.end();
@@ -185,10 +194,10 @@ export class GameScene extends Phaser.Scene {
 
     updateEnemyMovements() {
         if (dragon.x >= 500) {
-            // Go up
+            // Go left
             dragonMove = -(Math.floor(Math.random() * 4) + 1);;
         } else if (dragon.x <= 100) {
-            // Go down
+            // Go right
             dragonMove = Math.floor(Math.random() * 4) + 1;
         }
 

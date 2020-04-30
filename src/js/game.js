@@ -1,4 +1,5 @@
 import { GameScene } from './Scenes/GameScene'; 
+import { MenuScene } from "./Scenes/MenuScene.js";
 
 const width = 800;
 const height = 600;
@@ -15,7 +16,7 @@ const config = {
         },
     },
     scene: [
-		GameScene
+		MenuScene, GameScene
     ],
     pixelArt: true,
 	roundPixels: true
